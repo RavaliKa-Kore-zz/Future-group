@@ -59,9 +59,6 @@ function koreBotChat() {
     var kfrm = {};
     kfrm.net = {};
     window.PieChartCount = 0;
-    window.barchartCount = 0;
-    window.linechartCount = 0;
-    window.chartColors = ['#41C5D3', '#09A8FA', '#626EEF', '#22EAAA', '#C4AFF0', '#324E7B', '#FC5C9C','#26344a','#50e3c2','#5f6bf7','#b3bac8','#f86a54','#00e5e0','#9371e8','#ffec8e','#99ed9e','#73888d'];
     /**************************File upload variable end here **************************/
     var _escPressed = 0; 
     String.prototype.isNotAllowedHTMLTags = function () {
@@ -585,7 +582,7 @@ function koreBotChat() {
         }
     };
     function isMobile() {
-        var isMobile = (/iphone|ipod|android|blackberry|fennec/).test(navigator.userAgent.toLowerCase()) || window.screen.width <= 480;
+        var isMobile = (/iphone|ipod|android|blackberry|fennec/).test(navigator.userAgent.toLowerCase());
         return isMobile;
     }
     chatWindow.prototype.init = function () {
@@ -635,16 +632,12 @@ function koreBotChat() {
         me.config.chatContainer.find('.chat-container').html("");
         bot.close();
         bot.init(me.config.botOptions);
+    $('.kore-chat-footer').addClass('disableUI');
     };
 
     chatWindow.prototype.bindEvents = function () {
         var me = this;
         var _chatContainer = me.config.chatContainer;
-          _chatContainer.on('click', '.RemoveBtn', function (event) {
-            $( ".RemoveBtn" ).remove();
-            console.log("<><><><<><>");
-        });
-        
         _chatContainer.draggable({
             handle: _chatContainer.find(".kore-chat-header .header-title"),
             containment: "window",
@@ -865,6 +858,7 @@ function koreBotChat() {
         });
         _chatContainer.off('click', '.close-btn').on('click', '.close-btn', function (event) {
             $('.recordingMicrophone').trigger('click');
+    $('.openChatWindow').show();
             if(ttsAudioSource) {
                 ttsAudioSource.stop();
             }
@@ -1038,6 +1032,7 @@ function koreBotChat() {
             _chatContainer.find('.kore-chat-header .header-title').html(me.config.chatTitle).attr('title', me.config.chatTitle);
             _chatContainer.find('.kore-chat-header .disabled').prop('disabled', false).removeClass("disabled");
             _chatInput.focus();
+            $('.kore-chat-footer').removeClass('disableUI');
         });
 
         bot.on("message", function (message) {
@@ -1091,19 +1086,6 @@ function koreBotChat() {
                 me.renderMessage(msgData);
             }
         });
-        var element = document.querySelector('.droppable');
-        function callback(files) {
-            // Here, we simply log the Array of files to the console.
-            if (fileUploaderCounter == 1) {
-                alert('You can upload only one file');
-                return;
-            }
-            cnvertFiles(this,files[0]);
-            if(files.length > 1) {
-                alert('You can upload only one file');
-            }
-        }
-        makeDroppable(element, callback);
     };
 
     chatWindow.prototype.bindIframeEvents = function (authPopup) {
@@ -1207,9 +1189,9 @@ function koreBotChat() {
 
     chatWindow.prototype.renderMessage = function (msgData) {
         var me = this, messageHtml = '', extension = '', _extractedFileName = '';
-		customTemplateObj.helpers = helpers;
-		customTemplateObj.extension = extension;
-		
+    customTemplateObj.helpers = helpers;
+    customTemplateObj.extension = extension;
+    
         if (msgData.type === "bot_response") {
             setTimeout(function () {
                 $('.typingIndicator').css('background-image', "url(" + msgData.icon + ")");
@@ -1226,68 +1208,76 @@ function koreBotChat() {
             extension = strSplit(msgData.message[0].component.payload.url);
             _extractedFileName = msgData.message[0].component.payload.url.replace(/^.*[\\\/]/, '');
         }
-		
-		/* checking for matched custom template */
-		messageHtml = customTemplateObj.renderMessage(msgData);
-		if(messageHtml === '') {
-		
-			if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "button") {
-				messageHtml = $(me.getChatTemplate("templatebutton")).tmpl({
-					'msgData': msgData,
-					'helpers': helpers,
-					'extension': extension
-				});
-			}
-			else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "list") {
-				messageHtml = $(me.getChatTemplate("templatelist")).tmpl({
-					'msgData': msgData,
-					'helpers': helpers,
-					'extension': extension
-				});
-			}
-			else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "quick_replies") {
-				messageHtml = $(me.getChatTemplate("templatequickreply")).tmpl({
-					'msgData': msgData,
-					'helpers': helpers,
-					'extension': extension
-				});
-				setTimeout(function(){
-					var evt = document.createEvent("HTMLEvents");
-					 evt.initEvent('resize', true, false);
-					 window.dispatchEvent(evt);
-				},150);
-			}
-			else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "carousel") {
-				messageHtml = $(me.getChatTemplate("carouselTemplate")).tmpl({
-					'msgData': msgData,
-					'helpers': helpers,
-					'extension': extension
-				});
-				
-				setTimeout(function () {
-					$('.carousel:last').addClass("carousel"+carouselTemplateCount);
-					var count = $(".carousel"+carouselTemplateCount).children().length;
-					if(count > 1) {
-						var carouselOneByOne = new PureJSCarousel({
-							carousel: '.carousel'+carouselTemplateCount,
-							slide: '.slide',
-							oneByOne: true
-						  });
-						 $('.carousel'+carouselTemplateCount).parent().show();
-						 $('.carousel'+carouselTemplateCount).attr('style', 'height: 100% !important');
-						 carouselEles.push(carouselOneByOne);
-					}
-					//window.dispatchEvent(new Event('resize'));
-					var evt = document.createEvent("HTMLEvents");
-					 evt.initEvent('resize', true, false);
-					 window.dispatchEvent(evt);
-					carouselTemplateCount += 1;
-					_chatContainer.animate({
-						scrollTop: _chatContainer.prop("scrollHeight")
-					}, 0);
-				});
-			} 
-			else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && (msgData.message[0].component.type == "image" || msgData.message[0].component.type == "audio" || msgData.message[0].component.type == "video" || msgData.message[0].component.type == "link")) {
+    
+    /* checking for matched custom template */
+    messageHtml = customTemplateObj.renderMessage(msgData);
+    if(messageHtml === '') {
+    
+    if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "button") {
+    messageHtml = $(me.getChatTemplate("templatebutton")).tmpl({
+    'msgData': msgData,
+    'helpers': helpers,
+    'extension': extension
+    });
+    }
+    else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "list") {
+    messageHtml = $(me.getChatTemplate("templatelist")).tmpl({
+    'msgData': msgData,
+    'helpers': helpers,
+    'extension': extension
+    });
+    }
+    
+    else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "image") {
+            messageHtml = $(me.getChatTemplate("imageTemplate")).tmpl({
+                'msgData': msgData,
+                'helpers': helpers,
+                'extension': extension
+            });
+    }
+    else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "quick_replies") {
+    messageHtml = $(me.getChatTemplate("templatequickreply")).tmpl({
+    'msgData': msgData,
+    'helpers': helpers,
+    'extension': extension
+    });
+    setTimeout(function(){
+    var evt = document.createEvent("HTMLEvents");
+     evt.initEvent('resize', true, false);
+     window.dispatchEvent(evt);
+    },150);
+    }
+    else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "carousel") {
+    messageHtml = $(me.getChatTemplate("carouselTemplate")).tmpl({
+    'msgData': msgData,
+    'helpers': helpers,
+    'extension': extension
+    });
+    
+    setTimeout(function () {
+    $('.carousel:last').addClass("carousel"+carouselTemplateCount);
+    var count = $(".carousel"+carouselTemplateCount).children().length;
+    if(count > 1) {
+    var carouselOneByOne = new PureJSCarousel({
+    carousel: '.carousel'+carouselTemplateCount,
+    slide: '.slide',
+    oneByOne: true
+      });
+     $('.carousel'+carouselTemplateCount).parent().show();
+     $('.carousel'+carouselTemplateCount).attr('style', 'height: 100% !important');
+     carouselEles.push(carouselOneByOne);
+    }
+    //window.dispatchEvent(new Event('resize'));
+    var evt = document.createEvent("HTMLEvents");
+     evt.initEvent('resize', true, false);
+     window.dispatchEvent(evt);
+    carouselTemplateCount += 1;
+    _chatContainer.animate({
+    scrollTop: _chatContainer.prop("scrollHeight")
+    }, 0);
+    });
+    } 
+    else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && (msgData.message[0].component.type == "image" || msgData.message[0].component.type == "audio" || msgData.message[0].component.type == "video" || msgData.message[0].component.type == "link")) {
                 messageHtml = $(me.getChatTemplate("templateAttachment")).tmpl({
                     'msgData': msgData,
                     'helpers': helpers,
@@ -1312,29 +1302,16 @@ function koreBotChat() {
                     google.charts.load('current', {'packages':['corechart']});
                     google.charts.setOnLoadCallback(drawChart);
                     function drawChart() {
-                        var data = new google.visualization.DataTable();
-                        data.addColumn('string', 'Task');
-                         data.addColumn('number', 'Hours per Day');
-                        data.addColumn({type: 'string', role: 'tooltip'});
+                        var labelArr = ['Label', 'Value'];
                         var pieChartData = [];
+                        pieChartData.push(labelArr);
                         var piechartElements = msgData.message[0].component.payload.elements;
-                        var _currrencyValue  = "";
                         for(var i=0;i<piechartElements.length;i++) {
-                            var regex = /[+-]?\d+(\.\d+)?/g;
-                            var _value =  piechartElements[i].value;
-                            /*if(typeof piechartElements[i].value === "string") {
-                                _value = piechartElements[i].value.match(regex)[0] || 0;
-                                _currrencyValue = piechartElements[i].value.split(/[0-9]+/)[0] || "";
-                            }*/
-                            if(piechartElements[i].currency) {
-                                _currrencyValue = piechartElements[i].currency;
-                            }
-                            var arr = [piechartElements[i].title+" \n"+_currrencyValue+""+_value];
-                            arr.push(parseFloat(_value));
-                            arr.push(piechartElements[i].title+"\n"+_currrencyValue+""+_value);
+                            var arr = [piechartElements[i].title];
+                            arr.push(parseFloat(piechartElements[i].value));
                             pieChartData.push(arr);
                         }
-                        data.addRows(pieChartData);
+                        var data = google.visualization.arrayToDataTable(pieChartData);
                         var options = {
                             chartArea: {
                                 left: "3%",
@@ -1342,151 +1319,20 @@ function koreBotChat() {
                                 height: "94%",
                                 width: "94%"
                             },
-                            pieSliceTextStyle : {},
-                            colors: window.chartColors
+                            pieSliceTextStyle : {}
                         };
 
                         if(piechartElements.length === 1) {
                             options.pieHole =  0.5;
                             options.pieSliceTextStyle.color = "black";
                         }
-                        var container = document.getElementById('piechart'+window.PieChartCount);
-                        var chart = new google.visualization.PieChart(container);
-                        google.visualization.events.addListener(chart, 'ready', function() {
-                            /*var rowIndex = 0;
-                              Array.prototype.forEach.call(container.getElementsByTagName('text'), function(label) {
-                                // find legend labels
-                                if ((label.getAttribute('text-anchor') === 'start') && (label.getAttribute('fill') !== '#ffffff')) {
-                                  label.innerHTML += ' (' + _currrencyValue + '' + data.getValue(rowIndex++, 1) + ')';
-                                }
-                              });
-                              */
-                        });
+                        var chart = new google.visualization.PieChart(document.getElementById('piechart'+window.PieChartCount));
+
                         chart.draw(data, options);
                         window.PieChartCount = window.PieChartCount + 1;
                       }
                 },150);
-                setTimeout(function(){
-                    $('.chat-container').scrollTop($('.chat-container').prop('scrollHeight'));
-                },200);
-            }
-            else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "barchart") {
-                messageHtml = $(me.getChatTemplate("barchartTemplate")).tmpl({
-                    'msgData': msgData,
-                    'helpers': helpers,
-                    'extension': extension
-                });
-                setTimeout(function(){
-                    google.charts.load('current', {packages: ['corechart', 'bar']});
-                    google.charts.setOnLoadCallback(drawChart);
-                    function drawChart() {
-                        var arrData = [];
-                        arrData.push(msgData.message[0].component.payload.headers);
-                        for(var i=0;i<msgData.message[0].component.payload.elements.length;i++) {
-                            var _tempArr = [];
-                            var _ele = msgData.message[0].component.payload.elements[i];
-                            _tempArr.push(_ele.title);
-                            for(var j=0;j<_ele.values.length;j++) {
-                                _tempArr.push(_ele.values[j]);
-                            }
-                            arrData.push(_tempArr);
-                        }
-                        var data = google.visualization.arrayToDataTable(arrData);
-                        var options = {
-                            chartArea: {
-                                height: "70%",
-                                width: "80%"
-                            },
-                            legend: { 
-                                position : 'top',
-                                alignment: 'end',
-                                maxLines: 3
-                            },
-                            hAxis: {
-                                gridlines: {
-                                    color: 'transparent'
-                                }
-                            },
-                            vAxis: {
-                                gridlines: {
-                                    color: 'transparent'
-                                },
-                                baselineColor: 'transparent'
-                            },
-                            bar: {groupWidth: "40%"},
-                            colors: window.chartColors
-                        };
-                        var container = document.getElementById('barchart'+window.barchartCount);
-
-                        var chart = new google.visualization.ColumnChart(container);
-                        //chart.draw(data, options);
-                        chart.draw(data, options);
-                        window.barchartCount = window.barchartCount + 1;
-                      }
-                },150);
-                setTimeout(function(){
-                    $('.chat-container').scrollTop($('.chat-container').prop('scrollHeight'));
-                },200);
-            }
-            else if (msgData.message[0] && msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.template_type == "linechart") {
-                messageHtml = $(me.getChatTemplate("linechartTemplate")).tmpl({
-                    'msgData': msgData,
-                    'helpers': helpers,
-                    'extension': extension
-                });
-                setTimeout(function(){
-                    google.charts.load('current', {packages: ['corechart', 'line']});
-                    google.charts.setOnLoadCallback(drawChart);
-                    function drawChart() {
-                        var arrData = [];
-                        arrData.push(msgData.message[0].component.payload.headers);
-                        for(var i=0;i<msgData.message[0].component.payload.elements.length;i++) {
-                            var _tempArr = [];
-                            var _ele = msgData.message[0].component.payload.elements[i];
-                            _tempArr.push(_ele.title);
-                            for(var j=0;j<_ele.values.length;j++) {
-                                _tempArr.push(_ele.values[j]);
-                            }
-                            arrData.push(_tempArr);
-                        }
-                        var data = google.visualization.arrayToDataTable(arrData);
-                        var options = {
-                            curveType: 'function',
-                            chartArea: {
-                                height: "70%",
-                                width: "80%"
-                            },
-                            legend: { 
-                                position : 'top',
-                                alignment: 'end',
-                                maxLines: 3
-                            },
-                            hAxis: {
-                                gridlines: {
-                                    color: 'transparent'
-                                }
-                            },
-                            vAxis: {
-                                gridlines: {
-                                    color: 'transparent'
-                                },
-                                baselineColor: 'transparent'
-                            },
-                            lineWidth: 3,
-                            colors: window.chartColors
-                        };
-                        var container = document.getElementById('linechart'+window.linechartCount);
-
-                        var chart = new google.visualization.LineChart(container);
-                        //chart.draw(data, options);
-                        chart.draw(data, options);
-                        window.linechartCount = window.linechartCount + 1;
-                      }
-                },150);
-                setTimeout(function(){
-                    $('.chat-container').scrollTop($('.chat-container').prop('scrollHeight'));
-                },200);
-            }
+            } 
         else {
             messageHtml = $(me.getChatTemplate("message")).tmpl({
                 'msgData': msgData,
@@ -1495,7 +1341,7 @@ function koreBotChat() {
             });
         }
         }
-		_chatContainer.append(messageHtml);
+    _chatContainer.append(messageHtml);
 
         //me.formatMessages(messageHtml);
         _chatContainer.animate({
@@ -1578,13 +1424,13 @@ function koreBotChat() {
     chatWindow.prototype.getChatTemplate = function (tempType) {
         var chatFooterTemplate =
             '<div class="footerContainer pos-relative"> \
-				{{if userAgentIE}} \
-				<div class="chatInputBox" contenteditable="true" ></div> \
-				<div class="chatInputBoxPlaceholder">${botMessages.message}</div> \
-            	{{else}} \
-				<div class="chatInputBox" contenteditable="true" placeholder="${botMessages.message}"></div> \
-            	{{/if}} \
-			<div class="attachment"></div> \
+    {{if userAgentIE}} \
+    <div class="chatInputBox" contenteditable="true" ></div> \
+    <div class="chatInputBoxPlaceholder">${botMessages.message}</div> \
+                {{else}} \
+    <div class="chatInputBox" contenteditable="true" placeholder="${botMessages.message}"></div> \
+                {{/if}} \
+    <div class="attachment"></div> \
             {{if isTTSEnabled}} \
                 <div class="sdkFooterIcon ttspeakerDiv ttsOff"> \
                     <button class="ttspeaker"> \
@@ -1612,41 +1458,41 @@ function koreBotChat() {
                 </button> \
                 <input type="file" name="Attachment" class="filety" id="captureAttachmnts"> \
             </div> \
-			{{if !(isSendButton)}}<div class="chatSendMsg">Press enter to send</div>{{/if}} \
-		</div>';
+    {{if !(isSendButton)}}<div class="chatSendMsg">Press enter to send</div>{{/if}} \
+    </div>';
 
         var chatWindowTemplate = '<script id="chat_window_tmpl" type="text/x-jqury-tmpl"> \
-			<div class="kore-chat-window droppable"> \
+    <div class="kore-chat-window"> \
                                 <div class="minimized-title"></div> \
                                 <div class="minimized"><span class="messages"></span></div> \
-				<div class="kore-chat-header"> \
-					<div class="header-title" title="${chatTitle}">${chatTitle}</div> \
-					<div class="chat-box-controls"> \
+    <div class="kore-chat-header"> \
+    <div class="header-title" title="${chatTitle}">${chatTitle}</div> \
+    <div class="chat-box-controls"> \
                                                 <button class="reload-btn" title="Reconnect"><span></span></button> \
-						<button class="minimize-btn" title="Minimize">&minus;</button> \
+    <button class="minimize-btn" title="Minimize">&minus;</button> \
                                                 <button class="expand-btn" title="Expand"><span class="expand-btn-span fa fa-expand"></span></button>\
-						<button class="close-btn" title="Close">&times;</button> \
-					</div> \
-				</div> \
-				<div class="kore-chat-body"> \
-					<div class="errorMsgBlock"> \
-					</div> \
-					<ul class="chat-container"></ul> \
-				</div> \
+    <button class="close-btn" title="Close">&times;</button> \
+    </div> \
+    </div> \
+    <div class="kore-chat-body"> \
+    <div class="errorMsgBlock"> \
+    </div> \
+    <ul class="chat-container"></ul> \
+    </div> \
                 <div class="typingIndicatorContent"><div class="typingIndicator"></div><div class="movingDots"></div></div> \
-				<div class="kore-chat-footer">' + chatFooterTemplate + '{{if isSendButton}}<div class="sendBtnCnt"><button class="sendButton disabled" type="button">Send</button></div>{{/if}}</div> \
-			</div> \
-		</script>';
+    <div class="kore-chat-footer disableUI">' + chatFooterTemplate + '{{if isSendButton}}<div class="sendBtnCnt"><button class="sendButton disabled" type="button">Send</button></div>{{/if}}</div> \
+    </div> \
+    </script>';
 
         var msgTemplate = '<script id="chat_message_tmpl" type="text/x-jqury-tmpl"> \
-			{{if msgData.message}} \
-				{{each(key, msgItem) msgData.message}} \
-					{{if msgItem.cInfo && msgItem.type === "text"}} \
-						<li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} {{if msgData.icon}}with-icon{{/if}}"> \
-							{{if msgData.createdOn}}<div class="extra-info">${helpers.formatDate(msgData.createdOn)}</div>{{/if}} \
-							{{if msgData.icon}}<div class="profile-photo"> <div class="user-account avtar" style="background-image:url(${msgData.icon})"></div> </div> {{/if}} \
-							<div class="messageBubble">\
-								<div> \
+    {{if msgData.message}} \
+    {{each(key, msgItem) msgData.message}} \
+    {{if msgItem.cInfo && msgItem.type === "text"}} \
+    <li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} {{if msgData.icon}}with-icon{{/if}}"> \
+    {{if msgData.createdOn}}<div class="extra-info">${helpers.formatDate(msgData.createdOn)}</div>{{/if}} \
+    {{if msgData.icon}}<div class="profile-photo"> <div class="user-account avtar" style="background-image:url(${msgData.icon})"></div> </div> {{/if}} \
+    <div class="messageBubble">\
+    <div> \
                                     {{if msgData.type === "bot_response"}} \
                                         {{if msgItem.component  && msgItem.component.type =="error"}} \
                                             <span style="color:${msgItem.component.payload.color}">{{html helpers.convertMDtoHTML(msgItem.component.payload.text, "bot")}} </span>\
@@ -1660,9 +1506,9 @@ function koreBotChat() {
                                         {{html helpers.convertMDtoHTML(msgItem.cInfo.body, "user")}} \
                                     {{/if}} \
                                 </div>\
-								{{if msgItem.cInfo && msgItem.cInfo.emoji}} \
-									<span class="emojione emojione-${msgItem.cInfo.emoji[0].code}">${msgItem.cInfo.emoji[0].title}</span> \
-								{{/if}} \
+    {{if msgItem.cInfo && msgItem.cInfo.emoji}} \
+    <span class="emojione emojione-${msgItem.cInfo.emoji[0].code}">${msgItem.cInfo.emoji[0].title}</span> \
+    {{/if}} \
                                 {{if msgItem.cInfo.attachments}} \
                                     <div class="msgCmpt attachments" fileid="${msgItem.cInfo.attachments[0].fileId}"> \
                                         <div class="uploadedFileIcon"> \
@@ -1683,15 +1529,15 @@ function koreBotChat() {
                                         <div class="curUseruploadedFileName">${msgItem.cInfo.attachments[0].fileName}</div> \
                                     </div> \
                                 {{/if}} \
-								{{if msgData.isError}} \
-									<div class="errorMsg">Send Failed. Please resend.</div> \
-								{{/if}} \
-							</div> \
-						</li> \
-					{{/if}} \
-				{{/each}} \
-			{{/if}} \
-		</scipt>';
+    {{if msgData.isError}} \
+    <div class="errorMsg">Send Failed. Please resend.</div> \
+    {{/if}} \
+    </div> \
+    </li> \
+    {{/if}} \
+    {{/each}} \
+    {{/if}} \
+    </scipt>';
         var templateAttachment = '<script id="chat_message_tmpl" type="text/x-jqury-tmpl"> \
             {{if msgData.message}} \
                 {{each(key, msgItem) msgData.message}} \
@@ -1735,28 +1581,28 @@ function koreBotChat() {
                 </div>\
         </script>';
         var buttonTemplate = '<script id="chat_message_tmpl" type="text/x-jqury-tmpl"> \
-			{{if msgData.message}} \
-				<li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} with-icon"> \
-					<div class="buttonTmplContent"> \
-						{{if msgData.createdOn}}<div class="extra-info">${helpers.formatDate(msgData.createdOn)}</div>{{/if}} \
-						{{if msgData.icon}}<div class="profile-photo"> <div class="user-account avtar" style="background-image:url(${msgData.icon})"></div> </div> {{/if}} \
-						<ul class="buttonTmplContentBox">\
-							<li class="buttonTmplContentHeading"> \
-								{{if msgData.type === "bot_response"}} {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "bot")}} {{else}} {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "user")}} {{/if}} \
-								{{if msgData.message[0].cInfo && msgData.message[0].cInfo.emoji}} \
-									<span class="emojione emojione-${msgData.message[0].cInfo.emoji[0].code}">${msgData.message[0].cInfo.emoji[0].title}</span> \
-								{{/if}} \
-							</li>\
-							{{each(key, msgItem) msgData.message[0].component.payload.buttons}} \
-								<li {{if msgItem.payload}}value="${msgItem.payload}"{{/if}} {{if msgItem.payload}}actual-value="${msgItem.payload}"{{/if}} {{if msgItem.url}}url="${msgItem.url}"{{/if}} class="buttonTmplContentChild" data-value="${msgItem.value}" type="${msgItem.type}">\
-									${msgItem.title}\
-								</li> \
-							{{/each}} \
-						</ul>\
-					</div>\
-				</li> \
-			{{/if}} \
-		</scipt>';
+    {{if msgData.message}} \
+    <li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} with-icon"> \
+    <div class="buttonTmplContent"> \
+    {{if msgData.createdOn}}<div class="extra-info">${helpers.formatDate(msgData.createdOn)}</div>{{/if}} \
+    {{if msgData.icon}}<div class="profile-photo"> <div class="user-account avtar" style="background-image:url(${msgData.icon})"></div> </div> {{/if}} \
+    <ul class="buttonTmplContentBox">\
+    <li class="buttonTmplContentHeading"> \
+    {{if msgData.type === "bot_response"}} {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "bot")}} {{else}} {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "user")}} {{/if}} \
+    {{if msgData.message[0].cInfo && msgData.message[0].cInfo.emoji}} \
+    <span class="emojione emojione-${msgData.message[0].cInfo.emoji[0].code}">${msgData.message[0].cInfo.emoji[0].title}</span> \
+    {{/if}} \
+    </li>\
+    {{each(key, msgItem) msgData.message[0].component.payload.buttons}} \
+    <li {{if msgItem.payload}}value="${msgItem.payload}"{{/if}} {{if msgItem.payload}}actual-value="${msgItem.payload}"{{/if}} {{if msgItem.url}}url="${msgItem.url}"{{/if}} class="buttonTmplContentChild" data-value="${msgItem.value}" type="${msgItem.type}">\
+    ${msgItem.title}\
+    </li> \
+    {{/each}} \
+    </ul>\
+    </div>\
+    </li> \
+    {{/if}} \
+    </scipt>';
 
         var pieChartTemplate = '<script id="chat_message_tmpl" type="text/x-jqury-tmpl"> \
             {{if msgData.message}} \
@@ -1773,34 +1619,6 @@ function koreBotChat() {
             {{/if}} \
         </scipt>';
 
-        var barchartTemplate = '<script id="chat_message_tmpl" type="text/x-jqury-tmpl"> \
-            {{if msgData.message}} \
-                <li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} with-icon barchart"> \
-                    {{if msgData.createdOn}}<div class="extra-info">${helpers.formatDate(msgData.createdOn)}</div>{{/if}} \
-                    {{if msgData.icon}}<div class="profile-photo extraBottom"> <div class="user-account avtar" style="background-image:url(${msgData.icon})"></div> </div> {{/if}} \
-                    <div class="messageBubble barchart">\
-                        <span>{{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "bot")}}</span>\
-                    </div>\
-                    <div class="barchartDiv">\
-                        <div id="barchart${window.barchartCount}" style="width: 300px;"></div>\
-                    </div>\
-                </li> \
-            {{/if}} \
-        </scipt>';
-        var linechartTemplate = '<script id="chat_message_tmpl" type="text/x-jqury-tmpl"> \
-            {{if msgData.message}} \
-                <li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} with-icon linechart"> \
-                    {{if msgData.createdOn}}<div class="extra-info">${helpers.formatDate(msgData.createdOn)}</div>{{/if}} \
-                    {{if msgData.icon}}<div class="profile-photo extraBottom"> <div class="user-account avtar" style="background-image:url(${msgData.icon})"></div> </div> {{/if}} \
-                    <div class="messageBubble linechart">\
-                        <span>{{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "bot")}}</span>\
-                    </div>\
-                    <div class="linechartDiv">\
-                        <div id="linechart${window.linechartCount}" style="width: 300px;"></div>\
-                    </div>\
-                </li> \
-            {{/if}} \
-        </scipt>';
         var tableChartTemplate = '<script id="chat_message_tmpl" type="text/x-jqury-tmpl"> \
             {{if msgData.message}} \
                 <li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} with-icon tablechart"> \
@@ -1812,18 +1630,20 @@ function koreBotChat() {
                     <div class="tablechartDiv">\
                         <div style="overflow-x:auto;">\
                             <table cellspacing="0" cellpadding="0">\
-                                <tr class="headerTitle">\
+                                <tr>\
                                     {{each(key, tableHeader) msgData.message[0].component.payload.data.headers}} \
                                         <th style="width:${tableHeader.percentage}%; text-align:${tableHeader.alignment};">${tableHeader.title}</th>\
                                     {{/each}} \
                                 </tr>\
                                 {{each(key, tableRow) msgData.message[0].component.payload.data.rows}} \
                                     {{if tableRow.length>1}}\
-                                        <tr class="{{if (key < msgData.message[0].component.payload.data.rows.length-2) && (msgData.message[0].component.payload.data.rows[key+1].length < 2)}}bottomThickBorder{{/if}}">\
+                                        <tr>\
                                             {{each(cellkey, cellValue) tableRow}} \
-                                                <td  {{if cellkey === tableRow.length-1}}colspan="2"{{/if}} class="{{if key < msgData.message[0].component.payload.data.rows.length-1}} addBottomBorder {{/if}} {{if key == 0}} addTopBorder {{/if}} {{if (key < msgData.message[0].component.payload.data.rows.length-2) && (msgData.message[0].component.payload.data.rows[key+1].length < 2)}}bottomThickBorder{{/if}}" style="text-align:${msgData.message[0].component.payload.data.headers[cellkey].alignment};">${cellValue}</td>\
+                                                <td class="{{if key < msgData.message[0].component.payload.data.rows.length-1}} addBottomBorder {{/if}} {{if key == 0}} addTopBorder {{/if}}" style="text-align:${msgData.message[0].component.payload.data.headers[cellkey].alignment};">${cellValue}</td>\
                                             {{/each}} \
                                         </tr>\
+                                        {{else}}\
+                                        <tr><td></td></tr>\
                                     {{/if}}\
                                 {{/each}} \
                             </table>\
@@ -1839,11 +1659,19 @@ function koreBotChat() {
                 <li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} with-icon"> \
                     {{if msgData.createdOn}}<div class="extra-info">${helpers.formatDate(msgData.createdOn)}</div>{{/if}} \
                     {{if msgData.icon}}<div class="profile-photo extraBottom"> <div class="user-account avtar" style="background-image:url(${msgData.icon})"></div> </div> {{/if}} \
+    {{if msgData.message[0].component.payload.text}} \
+<div class="messageBubble"> \
+{{if msgData.type === "bot_response"}} {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "bot")}} {{else}} {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "user")}} {{/if}} \
+{{if msgData.message[0].cInfo && msgData.message[0].cInfo.emoji}} \
+<span class="emojione emojione-${msgData.message[0].cInfo.emoji[0].code}">${msgData.message[0].cInfo.emoji[0].title}</span> \
+{{/if}} \
+</div>\
+{{/if}} \
                     <div class="carousel" id="carousel-one-by-one" style="height: 0px;">\
                         {{each(key, msgItem) msgData.message[0].component.payload.elements}} \
                             <div class="slide">\
                                 {{if msgItem.image_url}} \
-                                    <div class="carouselImageContent" {{if msgItem.default_action.url}}url="${msgItem.default_action.url}"{{/if}} {{if msgItem.default_action.title}}data-value="${msgItem.default_action.title}"{{/if}} {{if msgItem.default_action.type}}type="${msgItem.default_action.type}"{{/if}} {{if msgItem.default_action.payload}} value="${msgItem.default_action.payload}"{{/if}}> \
+                                    <div class="carouselImageContent" {{if msgItem.default_action && msgItem.default_action.url}}url="${msgItem.default_action.url}"{{/if}} {{if msgItem.default_action && msgItem.default_action.title}}data-value="${msgItem.default_action.title}"{{/if}} {{if msgItem.default_action && msgItem.default_action.type}}type="${msgItem.default_action.type}"{{/if}} {{if msgItem.default_action && msgItem.default_action.payload}} value="${msgItem.default_action.payload}"{{/if}}> \
                                         <img src="${msgItem.image_url}" /> \
                                     </div> \
                                 {{/if}} \
@@ -1895,41 +1723,41 @@ function koreBotChat() {
             {{/if}} \
         </scipt>';
         var listTemplate = '<script id="chat_message_tmpl" type="text/x-jqury-tmpl"> \
-			{{if msgData.message}} \
-				<li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} with-icon"> \
-					<div class="listTmplContent"> \
-						{{if msgData.createdOn}}<div class="extra-info">${helpers.formatDate(msgData.createdOn)}</div>{{/if}} \
-						{{if msgData.icon}}<div class="profile-photo"> <div class="user-account avtar" style="background-image:url(${msgData.icon})"></div> </div> {{/if}} \
-						<ul class="listTmplContentBox"> \
-							{{if msgData.message[0].component.payload.title || msgData.message[0].component.payload.heading}} \
-								<li class="listTmplContentHeading"> \
-									{{if msgData.type === "bot_response" && msgData.message[0].component.payload.heading}} {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.heading, "bot")}} {{else}} {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "user")}} {{/if}} \
-									{{if msgData.message[0].cInfo && msgData.message[0].cInfo.emoji}} \
-										<span class="emojione emojione-${msgData.message[0].cInfo.emoji[0].code}">${msgData.message[0].cInfo.emoji[0].title}</span> \
-									{{/if}} \
-								</li> \
-							{{/if}} \
-							{{each(key, msgItem) msgData.message[0].component.payload.elements}} \
-								{{if msgData.message[0].component.payload.buttons}} \
+    {{if msgData.message}} \
+    <li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} with-icon"> \
+    <div class="listTmplContent"> \
+    {{if msgData.createdOn}}<div class="extra-info">${helpers.formatDate(msgData.createdOn)}</div>{{/if}} \
+    {{if msgData.icon}}<div class="profile-photo"> <div class="user-account avtar" style="background-image:url(${msgData.icon})"></div> </div> {{/if}} \
+    <ul class="listTmplContentBox"> \
+    {{if msgData.message[0].component.payload.title || msgData.message[0].component.payload.heading}} \
+    <li class="listTmplContentHeading"> \
+    {{if msgData.type === "bot_response" && msgData.message[0].component.payload.heading}} {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.heading, "bot")}} {{else}} {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "user")}} {{/if}} \
+    {{if msgData.message[0].cInfo && msgData.message[0].cInfo.emoji}} \
+    <span class="emojione emojione-${msgData.message[0].cInfo.emoji[0].code}">${msgData.message[0].cInfo.emoji[0].title}</span> \
+    {{/if}} \
+    </li> \
+    {{/if}} \
+    {{each(key, msgItem) msgData.message[0].component.payload.elements}} \
+    {{if msgData.message[0].component.payload.buttons}} \
                                     {{if key<= 2 }}\
-    									<li class="listTmplContentChild"> \
-    										{{if msgItem.image_url}} \
+        <li class="listTmplContentChild"> \
+        {{if msgItem.image_url}} \
                                             <div class="listRightContent"> \
                                                 <img src="${msgItem.image_url}" /> \
                                             </div> \
                                             {{/if}} \
                                             <div class="listLeftContent"> \
-    											<div class="listItemTitle">{{if msgData.type === "bot_response"}} {{html helpers.convertMDtoHTML(msgItem.title, "bot")}} {{else}} {{html helpers.convertMDtoHTML(msgItem.title, "user")}} {{/if}}</div> \
+        <div class="listItemTitle">{{if msgData.type === "bot_response"}} {{html helpers.convertMDtoHTML(msgItem.title, "bot")}} {{else}} {{html helpers.convertMDtoHTML(msgItem.title, "user")}} {{/if}}</div> \
                                                 {{if msgItem.subtitle}}<div class="listItemSubtitle">{{if msgData.type === "bot_response"}} {{html helpers.convertMDtoHTML(msgItem.subtitle, "bot")}} {{else}} {{html helpers.convertMDtoHTML(msgItem.subtitle, "user")}} {{/if}}</div>{{/if}} \
-    											{{if msgItem.default_action}}<div class="listItemPath" type="url" url="${msgItem.default_action.url}">${msgItem.default_action.url}</div>{{/if}} \
-    											{{if msgItem.buttons}}\
+        {{if msgItem.default_action}}<div class="listItemPath" type="url" url="${msgItem.default_action.url}">${msgItem.default_action.url}</div>{{/if}} \
+        {{if msgItem.buttons}}\
                                                 <div> \
-    												<span class="buyBtn" {{if msgItem.buttons[0].type}}type="${msgItem.buttons[0].type}"{{/if}} {{if msgItem.buttons[0].url}}url="${msgItem.buttons[0].url}"{{/if}} {{if msgItem.buttons[0].payload}}value="${msgItem.buttons[0].payload}"{{/if}}>{{if msgItem.buttons[0].title}}${msgItem.buttons[0].title}{{else}}Buy{{/if}}</span> \
-    											</div> \
+        <span class="buyBtn" {{if msgItem.buttons[0].type}}type="${msgItem.buttons[0].type}"{{/if}} {{if msgItem.buttons[0].url}}url="${msgItem.buttons[0].url}"{{/if}} {{if msgItem.buttons[0].payload}}value="${msgItem.buttons[0].payload}"{{/if}}>{{if msgItem.buttons[0].title}}${msgItem.buttons[0].title}{{else}}Buy{{/if}}</span> \
+        </div> \
                                                 {{/if}}\
-    										</div>\
-    									</li> \
-    								{{/if}}\
+        </div>\
+        </li> \
+        {{/if}}\
                                 {{else}} \
                                     <li class="listTmplContentChild"> \
                                         {{if msgItem.image_url}} \
@@ -1949,18 +1777,41 @@ function koreBotChat() {
                                         </div>\
                                     </li> \
                                 {{/if}} \
-							{{/each}} \
-							</li> \
-							{{if msgData.message[0].component.payload.elements.length > 3 && msgData.message[0].component.payload.buttons}}\
-							<li class="viewMoreList"> \
-								<span class="viewMore" url="{{if msgData.message[0].component.payload.buttons[0].url}}${msgData.message[0].component.payload.buttons[0].url}{{/if}}" type="${msgData.message[0].component.payload.buttons[0].type}" value="{{if msgData.message[0].component.payload.buttons[0].payload}}${msgData.message[0].component.payload.buttons[0].payload}{{else}}${msgData.message[0].component.payload.buttons[0].title}{{/if}}">${msgData.message[0].component.payload.buttons[0].title}</span> \
-							</li> \
-							{{/if}}\
-						</ul> \
-					</div> \
-				</li> \
-			{{/if}} \
-		</scipt>';
+    {{/each}} \
+    </li> \
+    {{if msgData.message[0].component.payload.elements.length > 3 && msgData.message[0].component.payload.buttons}}\
+    <li class="viewMoreList"> \
+    <span class="viewMore" url="{{if msgData.message[0].component.payload.buttons[0].url}}${msgData.message[0].component.payload.buttons[0].url}{{/if}}" type="${msgData.message[0].component.payload.buttons[0].type}" value="{{if msgData.message[0].component.payload.buttons[0].payload}}${msgData.message[0].component.payload.buttons[0].payload}{{else}}${msgData.message[0].component.payload.buttons[0].title}{{/if}}">${msgData.message[0].component.payload.buttons[0].title}</span> \
+    </li> \
+    {{/if}}\
+    </ul> \
+    </div> \
+    </li> \
+    {{/if}} \
+    </scipt>';
+    
+    var imageTemplate = '<script id="chat_message_tmpl" type="text/x-jqury-tmpl"> \
+    {{if msgData.message}} \
+    <li {{if msgData.type !== "bot_response"}}id="msg_${msgItem.clientMessageId}"{{/if}} class="{{if msgData.type === "bot_response"}}fromOtherUsers{{else}}fromCurrentUser{{/if}} with-icon"> \
+    {{if msgData.createdOn}}<div class="extra-info">${helpers.formatDate(msgData.createdOn)}</div>{{/if}} \
+    {{if msgData.icon}}<div class="profile-photo"> <div class="user-account avtar" style="background-image:url(${msgData.icon})"></div> </div> {{/if}} \
+    <div class="msgBubbleParent">\
+                                                    {{if msgData.message[0].component && msgData.message[0].component.payload && msgData.message[0].component.payload.image_url}}\
+                                                            <div class="messageBubble noBubble"> \
+                                                                    <img src="${msgData.message[0].component.payload.image_url}" /> \
+                                                            </div> \
+                                                    {{/if}} \
+                                                    <div class="messageBubble">\
+                                                            {{if msgData.type === "bot_response"}} \
+                                                                    {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "bot")}} \
+                                                            {{else}} \
+                                                                    {{html helpers.convertMDtoHTML(msgData.message[0].component.payload.text, "user")}} \
+                                                            {{/if}} \
+                                                    </div></div>\
+    </li> \
+    {{/if}} \
+    </scipt>';
+    
         if (tempType === "message") {
             return msgTemplate;
         } else if (tempType === "popup") {
@@ -1974,6 +1825,10 @@ function koreBotChat() {
         } else if(tempType === "templateAttachment") {
             return templateAttachment;
         } 
+    
+    else if(tempType === "imageTemplate"){
+            return imageTemplate;
+    }
         else if(tempType === "carouselTemplate"){
             return carouselTemplate;
         } 
@@ -1982,12 +1837,6 @@ function koreBotChat() {
         }
         else if(tempType === "tableChartTemplate") {
             return tableChartTemplate;
-        }
-        else if(tempType === "barchartTemplate") {
-            return barchartTemplate;
-        }
-        else if(tempType === "linechartTemplate") {
-            return linechartTemplate;
         }
         else {
             return chatWindowTemplate;
@@ -2002,7 +1851,7 @@ function koreBotChat() {
         return true;
     }
     var chatInitialize;
-	var customTemplateObj;
+    var customTemplateObj;
     function insertHtmlData(_txtBox, _html) {
         var _input = _txtBox;
         sel = window.getSelection();
@@ -2131,8 +1980,9 @@ function koreBotChat() {
         if ($('body').find('.kore-chat-window').length > 0) {
             return false;
         }
+    $('.openChatWindow').hide();
         chatInitialize = new chatWindow(cfg);
-		customTemplateObj = new customTemplate(cfg);
+    customTemplateObj = new customTemplate(cfg);
         return this;
     };
     this.destroy = function () {
@@ -2498,50 +2348,6 @@ function koreBotChat() {
     }
     /******************************** TTS code end here **********************************************/
     /*******************************    Function for Attachment ***********************************************/
-    
-    function makeDroppable(element, callback) {
-      var input = document.createElement('input');
-      input.setAttribute('type', 'file');
-      input.setAttribute('multiple', false);
-      input.style.display = 'none';
-
-      input.addEventListener('change', triggerCallback);
-      element.appendChild(input);
-      
-      element.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        element.classList.add('dragover');
-      });
-
-      element.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        element.classList.remove('dragover');
-      });
-
-      element.addEventListener('drop', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        element.classList.remove('dragover');
-        triggerCallback(e);
-      });
-      
-      /*element.addEventListener('click', function() {
-        input.value = null;
-        input.click();
-      });*/
-
-      function triggerCallback(e) {
-        var files;
-        if(e.dataTransfer) {
-          files = e.dataTransfer.files;
-        } else if(e.target) {
-          files = e.target.files;
-        }
-        callback.call(null, files);
-      }
-    }
     function cnvertFiles(_this, _file, customFileName) {
         var _scope = _this, recState = {};
         if (_file && _file.size) {
