@@ -1,1 +1,5 @@
 /* write your custom templates css styles */
+.mulitpleBtns {
+float: right;
+padding-right: 10px;
+}
