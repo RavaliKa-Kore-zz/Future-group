@@ -5,6 +5,7 @@ function koreBotChat() {
         connecting: "Connecting...",
         reconnecting: "Reconnecting..."
     };
+    var isFirstTime = true;
     var _botInfo = {};
     var detectScriptTag = /<script\b[^>]*>([\s\S]*?)/gm;
     var _eventQueue = {};
@@ -1027,12 +1028,23 @@ function koreBotChat() {
             }
         });
         bot.on("open", function (response) {
+            if(isFirstTime)
+            {
+                isFirstTime = false
+            var messageToBot = {};
+
+            messageToBot["message"] = { body: "welcome1" };
+        
+            messageToBot["resourceid"] = '/bot.message';
+        
+            bot.sendMessage(messageToBot, function messageSent(err) {
+            });
+            }
             accessToken = me.config.botOptions.accessToken;
             var _chatInput = _chatContainer.find('.kore-chat-footer .chatInputBox');
             _chatContainer.find('.kore-chat-header .header-title').html(me.config.chatTitle).attr('title', me.config.chatTitle);
             _chatContainer.find('.kore-chat-header .disabled').prop('disabled', false).removeClass("disabled");
             _chatInput.focus();
-            $('.kore-chat-footer').removeClass('disableUI');
         });
 
         bot.on("message", function (message) {
