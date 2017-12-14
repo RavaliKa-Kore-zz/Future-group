@@ -1014,6 +1014,10 @@ ul.chat-container li.fromOtherUsers.with-icon .extra-info{
     height: 139px;
     background-color: #ffffff;
     cursor: pointer;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border: solid 1px #ededed;
+    border-bottom: none;
 }
 .carouselImageContent img {
     width: 244px;
