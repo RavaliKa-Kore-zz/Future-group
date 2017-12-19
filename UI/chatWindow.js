@@ -1033,7 +1033,7 @@ function koreBotChat() {
                 isFirstTime = false
             var messageToBot = {};
 
-            messageToBot["message"] = { body: "welcome1" };
+            messageToBot["message"] = { body: "Welpro" };
         
             messageToBot["resourceid"] = '/bot.message';
         
