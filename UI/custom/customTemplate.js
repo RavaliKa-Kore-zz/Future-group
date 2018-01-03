@@ -10,6 +10,7 @@ function customTemplate(data) {
  * output : Custom template HTML
  */
  var carouselAdvTemplateCount = 0;
+ var carouselEles = [];
 customTemplate.prototype.renderMessage = function (msgData) {
 	// For your reference sample code snippet given below
 	var messageHtml = '';
