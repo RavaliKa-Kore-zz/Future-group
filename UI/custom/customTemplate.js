@@ -48,9 +48,9 @@ customTemplate.prototype.renderMessage = function (msgData) {
                      evt.initEvent('resize', true, false);
                      window.dispatchEvent(evt);
                     carouselAdvTemplateCount += 1;
-                    _chatContainer.animate({
-                        scrollTop: _chatContainer.prop("scrollHeight")
-                    }, 0);
+                    setTimeout(function(){
+                        $('.chat-container').scrollTop($('.chat-container').prop('scrollHeight'));
+                    },200);
                 });
     }
 	return messageHtml;
