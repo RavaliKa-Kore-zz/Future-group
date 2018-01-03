@@ -17,7 +17,7 @@
 }
 
 .purejscarousel-btn {
-  background: transparent;
+  background: #00000014;
   border: 0;
   box-shadow: none;
   outline: none;
@@ -39,8 +39,6 @@
 }
 
 .purejscarousel-btn-prev {
-  border-bottom: 8px solid #aaa;
-  border-left: 8px solid #aaa;
   left: 5px;
   -moz-transform: rotate(45deg);
   -webkit-transform: rotate(45deg);
@@ -74,7 +72,18 @@
 
 
 
-
+.purejscarousel .purejscarousel-btn-prev{
+  display: none;
+}
+.purejscarousel:hover .purejscarousel-btn-prev{
+  display: block;
+}
+.purejscarousel .purejscarousel-btn-next{
+  display: none;
+}
+.purejscarousel:hover .purejscarousel-btn-next{
+  display: block;
+}
 
 
 *,

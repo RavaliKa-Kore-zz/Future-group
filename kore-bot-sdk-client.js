@@ -228,6 +228,13 @@ KoreBot.prototype.onOpenWSConnection = function(msg) {
 	this.initialized = true;
 	this.getHistory({});
 	this.emit(RTM_CLIENT_EVENTS.RTM_CONNECTION_OPENED, {});
+	var message = {
+		"message": {
+		"body": "Welpro"
+		},
+		"resourceid": "/bot.message"
+		}
+		this.sendMessage(message);
 };
 
 /*

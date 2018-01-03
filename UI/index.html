@@ -2,148 +2,162 @@
 <html>
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.1, maximum-scale=1.0">
-		<script src="UI/libs/jquery.js" type="text/javascript"></script>
-		<script src="UI/libs/jquery.tmpl.min.js" type="text/javascript"></script>
-		<script src="UI/libs/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="libs/jquery.js" type="text/javascript"></script>
+		<script src="libs/jquery.tmpl.min.js" type="text/javascript"></script>
+		<script src="libs/jquery-ui.min.js" type="text/javascript"></script>
+		<link href="libs/jquery-ui.min.css" rel="stylesheet"></link>
 
-		<link href="UI/libs/jquery-ui.min.css" rel="stylesheet"></link>
-
-        <script src="UI/libs/jwt.min.js"></script>
-		<script src="libs/lodash.min.js"></script>
-		<script src='libs/anonymousassertion.js'></script>
-		<script src="kore-bot-sdk-client.js"></script>
-		<script src="UI/chatWindow.js" type="text/javascript"></script>
-		<script src="libs/emoji.js" type="text/javascript"></script>
-		<script src="libs/recorder.js" type="text/javascript"></script>
-		<script src="libs/recorderWorker.js" type="text/javascript"></script>
-		<link href="UI/chatWindow.css" rel="stylesheet"></link>
-		<link href="libs/emojione.sprites.css" rel="stylesheet"></link>
-	    <link href="libs/purejscarousel.css" rel="stylesheet"></link>
-		<script src="libs/purejscarousel.js" type="text/javascript"></script>
-		<script src="UI/custom/customTemplate.js" type="text/javascript"></script>
-		<link href="UI/custom/customTemplate.css" rel="stylesheet"></link>
+		<script src="../libs/lodash.min.js"></script>
+		<script src='../libs/anonymousassertion.js'></script>
+		<script src="../kore-bot-sdk-client.js"></script>
+		<script src="chatWindow.js" type="text/javascript"></script>
+		<script src="../libs/emoji.js" type="text/javascript"></script>
+		<script src="../libs/recorder.js" type="text/javascript"></script>
+		<script src="../libs/recorderWorker.js" type="text/javascript"></script>
+		<link href="chatWindow.css" rel="stylesheet"></link>
+		<link href="../libs/emojione.sprites.css" rel="stylesheet"></link>
+		<link href="../libs/purejscarousel.css" rel="stylesheet"></link>
+		<script src="../libs/purejscarousel.js" type="text/javascript"></script>
+		<script src="custom/customTemplate.js" type="text/javascript"></script>
+		<link href="custom/customTemplate.css" rel="stylesheet"></link>
+		<script type="text/javascript" src="libs/loader.js"></script>
+		<script type="text/javascript" src="../libs/speech/app.js"></script>
+		<script type="text/javascript" src="../libs/speech/key.js"></script>
+		<script type="text/javascript" src="../libs/client_api.js"></script>
 		<script type="text/javascript">
-			$(document).on("ready", function () {
-	
-	function koreGenerateUUID() {
-	var d = new Date().getTime();
-	if (window.performance && typeof window.performance.now === "function"){
-	d += performance.now(); //use high-precision timer if available
-  	}
-	var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-	var r = (d + Math.random() * 16) % 16 | 0;
-	 d = Math.floor(d / 16);
-	return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-	});
-	return uuid;
-	 }
-	
 
-	function generateJWT() {
-		var korecookie = localStorage.getItem("korecom");
-	 var uuid = (korecookie) || koreGenerateUUID();
-	 localStorage.setItem("korecom", uuid);
-        // Header
-        var oHeader = {alg: 'HS256', typ: 'JWT'};
-        // Payload
-        var oPayload = {};
-        var tNow = KJUR.jws.IntDate.get('now');
-              var tEnd = KJUR.jws.IntDate.get('now + 1day');
-        oPayload.iss = "cs-d4cb4e17-94db-527e-98c5-16a4f6130be9";
-        oPayload.sub = uuid;
-        oPayload.iat = tNow;
-        oPayload.exp = tEnd;
-        oPayload.aud = "https://idproxy.kore.com/authorize";
-        oPayload.isAnonymous = false; 
-        
-        // Sign JWT
-        var sHeader = JSON.stringify(oHeader);
-        var sPayload = JSON.stringify(oPayload);
-        var sJWT = KJUR.jws.JWS.sign("HS256", sHeader, sPayload, "MTcKUHrHYKUC9OFKSKn8U8SkS5MfFCAgIKb1F2zS3PI=");
-        return sJWT;
+				var meta = document.createElement('meta');
+				meta.setAttribute('content', 'IE=10');
+				meta.setAttribute('http-equiv', 'X-UA-Compatible');
+				document.getElementsByTagName('head')[0].appendChild(meta);
+
+				$(document).on("ready", function () {
+				function koreGenerateUUID() {
+				console.info("generating UUID");
+				var d = new Date().getTime();
+				if (window.performance && typeof window.performance.now === "function") {
+				d += performance.now(); //use high-precision timer if available
+				}
+				var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+				var r = (d + Math.random() * 16) % 16 | 0;
+				d = Math.floor(d / 16);
+				return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+				});
+				return uuid;
+				}
 
 
-    }			
-	function assertion(options, callback){
-           
-          options.assertion = generateJWT();
-		  options.handleError = koreBot.showError;
-		  callback(null, options);
-		  setTimeout(function () {
-		  if (koreBot && koreBot.initToken) {
-			koreBot.initToken(options);
-		  }
-		}, 2000);
-  }      
+				function assertion(options, callback) {
+				var korecookie = localStorage.getItem("korecom");
+				var uuid = (korecookie) || koreGenerateUUID();
+				localStorage.setItem("korecom", uuid);
+
+				/*options.assertion = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MDE3Njg1MjY0ODEsImV4cCI6MTUwMTg1NDkyNjQ4MSwiYXVkIjoiaHR0cHM6Ly9pZHByb3h5LmtvcmUuY29tL2F1dGhvcml6ZSIsImlzcyI6ImNzLTk3YzZmMjllLTAzN2MtNTIwMS1iNmFkLTRhMzY4YzU3NDgwZSIsInN1YiI6InBhcmFtZXNoLmFuYWthcGFsbGlAa29yZS5jb20iLCJpc0Fub255bW91cyI6dHJ1ZX0.TdVjNsIueVRGfoN47gD9F2bGY_7nhevoW839VglV6h0";
+				options.handleError = koreBot.showError;
+				options.botDetails = koreBot.botDetails;
+				callback(null, options);
+				setTimeout(function () {
+				if (koreBot && koreBot.initToken) {
+				koreBot.initToken(options);
+				}
+				}, 2000);*/
+				var jsonData = {
+				"clientId": "cs-712d8f22-a03b-5907-8bd0-ae40a0b97759",
+				"clientSecret": "tMblJdGpwetkumvwHezsgYDmZxVG1GbUzLoVxxWmPIs=",
+				"identity": uuid,
+				"aud": "",
+				"isAnonymous": false
+				};
+				$.ajax({
+				url: "https://jwtgenerator.herokuapp.com/users/sts",
+
+				type: 'post',
+				data: jsonData,
+				dataType: 'json',
+				success: function (data) {
+				options.assertion = data.jwt;
+				options.handleError = koreBot.showError;
+				options.botDetails = koreBot.botDetails;
+				callback(null, options);
+				setTimeout(function () {
+				if (koreBot && koreBot.initToken) {
+				koreBot.initToken(options);
+				}
+				}, 2000);
+				},
+				error: function (err) {
+				koreBot.showError(err.responseText);
+				}
+				});
+				}
 
 				var botOptions = {};
 				botOptions.logLevel = 'debug';
-				botOptions.koreAPIUrl = "https://pilot-bots.kore.ai/api/";
+				botOptions.koreAPIUrl = "https://bots.kore.ai/api/";
+				botOptions.koreSpeechAPIUrl = "https://speech.kore.ai/";
 				//botOptions.bearer = "bearer xyz-------------------";
-				botOptions.speechSocketUrl = 'wss://';
+				botOptions.speechSocketUrl = 'wss://speech.kore.ai/stream/kore/decode';
+
+				botOptions.ttsSocketUrl = 'wss://speech.kore.ai/tts/ws';
+				//botOptions.userIdentity = ''// Provide users email id here
+				botOptions.recorderWorkerPath = '../libs/recorderWorker.js';
 				botOptions.assertionFn = assertion;
 				botOptions.koreAnonymousFn = koreAnonymousFn;
-				botOptions.clientId   = "cs-d4cb4e17-94db-527e-98c5-16a4f6130be9"; // secure client-id
-				botOptions.botInfo = {name:"FG Order Details","_id":"st-6417d1b9-c9b7-5995-a0fe-7c6347611fde"}; // bot name is case sensitive
-				botOptions.sendWelcomeMessage = true;
+				botOptions.clientId = "cs-712d8f22-a03b-5907-8bd0-ae40a0b97759"; // secure client-id
+				botOptions.botInfo = {name:"FG Order Demo Bot","_id":"st-aaab7ca3-c880-5086-9ed8-b77f6aa22689"}; // bot name is case sensitive
+
+
 				var chatConfig={
-					botOptions:botOptions,
-					allowIframe: false,
-					isSendButton: false,
-					isTTSEnabled: true,
-					isSpeechEnabled: true
+				botOptions:botOptions,
+				allowIframe: false,
+				isSendButton: false,
+				isTTSEnabled: true,
+				isSpeechEnabled: true,
+				allowGoogleSpeech: true
 				};
-				
 				var koreBot = koreBotChat();
 				koreBot.show(chatConfig);
-
 				$('.openChatWindow').click(function () {
-    				koreBot =  koreBotChat();
-					koreBot.show(chatConfig);
+				//debugger; 
+				koreBotChat().show(chatConfig);
 				});
-			});
- 	
-
-    
+				});
 		</script>
 			<style>
 		
 		#chatContainer{
 		position: absolute;
-    top: 0;
-    right: 0;
-		
+    	top: 0;
+    	right: 0;
 		}
 		.openChatWindow{
-		    float: right;
-    margin: 18px 24px 0 0;
-    border: 1px solid #00a4ff;
-    background: #fff;
-    border-radius: 4px;
-    padding: 8px;
-    color: #009dab;
-	cursor:pointer;
-		
-		}
-		
+		float: right;
+	    margin: 18px 24px 0 0;
+	    border: 1px solid #00a4ff;
+	    background: #fff;
+	    border-radius: 4px;
+	    padding: 8px;
+	    color: #009dab;
+		cursor:pointer;		
+		}	
 		.openChatWindow:hover{
 		border: 1px solid #009dab;
 		}
-	.fit { /* set relative picture size */
-    max-width: 100%;
-    max-height: 100%;
-  }
-  .center {
-    display: block;
-    margin: auto;
-  }
+		.fit { /* set relative picture size */
+	    max-width: 100%;
+	    max-height: 100%;
+	  	}
+	  	.center {
+	    display: block;
+	    margin: auto;
+	  	}
 		
 		</style>
-	</head>
-	<body style="width: 100%; height: 100%;  margin:0; padding:0;">
-	<img style="width: 100%; height: 100%" src="UI/libs/images/future.png">
-	    	<div id="chatContainer">
-			<button class="openChatWindow">Open Chat Window</button>
-		</div>
-	</body>
+		</head>
+		<body style="width: 100%; height: 100%;  margin:0; padding:0;">
+		<img style="width: 100%; height: 100%" src="libs/images/future.png">
+		    	<div id="chatContainer">
+				<button class="openChatWindow">Open Chat Window</button>
+			</div>
+		</body>
 </html>

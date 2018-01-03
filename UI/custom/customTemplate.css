@@ -3,3 +3,36 @@
 float: right;
 padding-right: 10px;
 }
+.Card-banner.top-right {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #ffffcd;
+    border-radius: 0 14px 0 14px;
+ }
+ .Card-banner.bottom-left {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: #0096ff;
+    color: #fff;
+    border-radius: 1px;
+}
+.Card-banner {
+ 	color: #333;
+    z-index: 1;
+    font-size: 12px;
+    padding: 5px 10px;
+	font-family: GGothamRoundedMedium,sans-serif;
+}
+
+.carouselImageContent {
+	position: relative !important;
+}
+.truncate {
+    /*display:inline-block;*/
+    width:180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
