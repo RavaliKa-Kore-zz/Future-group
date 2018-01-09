@@ -14,6 +14,7 @@ var RTM_CLIENT_EVENTS = clients.CLIENT_EVENTS.RTM;
 var RTM_EVENTS = clients.RTM_EVENTS;
 var jstz = require('./jstz.js');
 var noop = lodash.noop;
+var _messageAlreadySent = false;
 
 if(typeof window !== "undefined"){
 	window.kore = window.kore || {};
@@ -228,13 +229,16 @@ KoreBot.prototype.onOpenWSConnection = function(msg) {
 	this.initialized = true;
 	this.getHistory({});
 	this.emit(RTM_CLIENT_EVENTS.RTM_CONNECTION_OPENED, {});
-	var message = {
-		"message": {
-		"body": "Welpro"
-		},
-		"resourceid": "/bot.message"
-		}
-		this.sendMessage(message);
+			if(!_messageAlreadySent) {
+		_messageAlreadySent = true;
+		var message = {
+			"message": {
+			"body": "Welpro"
+			},
+			"resourceid": "/bot.message"
+			}
+			this.sendMessage(message);
+	}
 };
 
 /*
@@ -290,6 +294,7 @@ KoreBot.prototype.logIn = function(err, data) {
 initializes the bot set up.
 */
 KoreBot.prototype.init = function(options) {
+	_messageAlreadySent = false;
 	options = options || {};
 	this.options = options;
 	if (!options.test) {
