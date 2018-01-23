@@ -1666,7 +1666,7 @@ function koreBotChat() {
                 </button> \
                 <input type="file" name="Attachment" class="filety" id="captureAttachmnts"> \
             </div> \
-			{{if !(isSendButton)}}<div class="chatSendMsg">Press enter to send</div>{{/if}} \
+			{{if !(isSendButton)}}<div class="chatSendMsg">Type "Exit" to abort the current task</div>{{/if}} \
 		</div>';
 
         var chatWindowTemplate = '<script id="chat_window_tmpl" type="text/x-jqury-tmpl"> \
