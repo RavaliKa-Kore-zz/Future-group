@@ -929,6 +929,9 @@ function koreBotChat() {
                 }
                 _chatContainer.find('.minimized-title').html("Talk to " + me.config.chatTitle);
                 me.minimized = true;
+                if (me.expanded === true) {
+                    $('.kore-chat-overlay').hide();
+                }
             }
             $('.recordingMicrophone').trigger('click');
             if(ttsAudioSource) {
@@ -972,11 +975,11 @@ function koreBotChat() {
                 _chatContainer.css('left', _chatContainer.position().left - (container_pos_left - $(window).width() + 10) + "px");
             }
         });
-        $('body').on('click', '.kore-chat-overlay, .kore-chat-window .minimize-btn', function () {
+        /*$('body').on('click', '.kore-chat-overlay, .kore-chat-window .minimize-btn', function () {
             if (me.expanded === true) {
                 $('.kore-chat-window .expand-btn').trigger('click');
             }
-        });
+        });*/
         $(document).on('keyup',function(evt) {
             if (evt.keyCode == 27) {
                $('.closeImagePreview').trigger('click');
@@ -1043,6 +1046,14 @@ function koreBotChat() {
                 containment: "window",
                 scroll: false
             });
+            var evt = document.createEvent("HTMLEvents");
+            evt.initEvent('resize', true, false);
+            $('.chat-container').animate({
+                scrollTop: $('.chat-container').prop("scrollHeight")
+            }, 100);
+            if (me.expanded === true) {
+                $('.kore-chat-overlay').show();
+            }
         });
 
         _chatContainer.off('click', '.reload-btn').on('click', '.reload-btn', function (event) {
